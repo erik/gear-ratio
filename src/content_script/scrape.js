@@ -19,10 +19,10 @@ export function parseLocalizedNumber (numberStr, locale) {
   return +numberStr.replaceAll('.', '').replaceAll(',', '.');
 }
 
-// Everything here munges HTML on www.strava.com/dashboard
+// Everything here parses HTML on www.strava.com/dashboard
 export const DashboardScraper = {
   athleteId (document) {
-    // Convert "/atheletes/id" href to "id"
+    // Convert "/athletes/id" href to "id"
     return document.querySelector(
       '#athlete-profile a[href^="/athletes/"]'
     )
@@ -32,7 +32,7 @@ export const DashboardScraper = {
   },
 
   displayUnit (document) {
-    // FIXME: this is iffy. Some activities (rowing) are hardcoded to
+    // FIXME: this is iffy. Some activities (e.g. rowing) are hardcoded to
     //   meters even if display preferences are for miles.
     const distanceUnit = (
       document.querySelector('div.activity .stat abbr.unit')
@@ -107,11 +107,11 @@ async function fetchBikeComponents (gearId, locale) {
   const url = `https://www.strava.com/bikes/${gearId}`;
   const doc = await fetchHTML(url);
 
-  // Should have two elements:
+  // Should have two elements match selector:
   //   1. Bike details, not of interest
   //   2. Components
-  const tables = doc.querySelectorAll('table');
-  return parseBikeTable(tables[1], locale);
+  const componentTable = doc.querySelectorAll('table')[1];
+  return parseBikeTable(componentTable, locale).filter(c => !c.removed);
 }
 
 // TODO: this could be easily generalized.
