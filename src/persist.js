@@ -18,7 +18,7 @@ export class PersistentState {
 
   async get (k, d) {
     const v = await browser.storage.local.get(k);
-    return (typeof v === 'undefined') ? d : v[k];
+    return (k in v) ? v[k] : d;
   }
 
   async set (k, v) {

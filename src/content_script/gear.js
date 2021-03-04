@@ -129,7 +129,6 @@ const ModalComponentsFormInput = ({ linkBikeIds, linkName, gear, onClickNext }) 
   };
 
   const displayInline = { style: 'display: inline-block;' };
-  console.log('my gear is', gear, linkBikeIds);
 
   const componentsByType = {};
   for (const bikeId of linkBikeIds) {
