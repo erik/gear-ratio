@@ -1,8 +1,8 @@
-import { h } from '../../render';
-import { App } from '../../app';
-import { persistentState } from '../../persist.js';
+import { h } from '../render';
+import { App } from '../app';
+import { persistentState } from '../persist.js';
 
-import scrape from '../scrape.js';
+import scrape from './scrape.js';
 
 function queryAppRootNode (document) {
   const container = document.querySelector('#bikes .right');
