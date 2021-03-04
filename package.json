@@ -16,6 +16,7 @@
         "webpack-cli": "^4.2.0"
     },
     "scripts": {
+        "fmt": "eslint --fix src/",
         "build": "webpack",
         "build:watch": "webpack --watch"
     }
