@@ -48,19 +48,6 @@ const Bike = ({ bike, components }) => {
   ]);
 };
 
-const BikeLink = ({ link }) => {
-  const href = 'https://strava.com/todo';
-
-  return h('p', { class: 'text-small' }, [
-    h('div', { class: 'text-label' }, [
-      h('strong', {}, h('a', { href }, ['🔗', link.name])),
-      ' • ',
-      h('span', {}, 'todo: total distance')
-    ]),
-    h('ul', {}, 'todo: components')
-  ]);
-};
-
 const Shoe = ({ shoe }) => {
   const href = `https://strava.com/shoes/${shoe.id}`;
 
@@ -86,23 +73,17 @@ const GearCard = {
       return h(Bike, { bike, components });
     });
 
-    // TODO: better rendering
-    const bikeLinks = (this.bikeLinks || []).map(link => h(BikeLink, { link }));
-
     const shoes = this.shoes.map(shoe => h(Shoe, { shoe }));
 
     return h('div', { class: 'card' }, [
       h('div', { class: 'card-body' }, [
-        h('div', { class: 'card-section' }, 'Bikes'),
         h('div', { class: 'card-section' }, [
-          h('div', {}, bikes),
-          h('div', {}, bikeLinks)
-        ])
-      ]),
-      h('div', { class: 'card-body' }, [
-        h('div', { class: 'card-section' }, 'Shoes'),
+          h('p', {}, 'Bikes'),
+          ...bikes,
+        ]),
         h('div', { class: 'card-section' }, [
-          h('div', {}, shoes)
+          h('p', {}, 'Shoes'),
+          ...shoes
         ])
       ]),
       h(CardFooter)
