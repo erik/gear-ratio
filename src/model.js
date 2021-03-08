@@ -36,42 +36,28 @@ export class BikeComponent {
   }
 }
 
-export class BikeLink {
-  constructor ({ displayName, bikes, componentTypes }) {
-    this.displayName = displayName;
+export class SharedBikeComponent {
+  constructor ({ componentType, bikes}) {
     this.bikes = bikes;
-    this.componentTypes = componentTypes;
+    this.componentType = componentType;
   }
 
-  getLinkedBikeIds () {
-    return this.bikes.map(it => it.id);
+  totalDistance () {
+    return this.bikes.reduce((bike, totalDistance) => {
+      const c = bike.getComponent(this.componentType);
+      return totalDistance + (c !== null ? c.totalDistance : 0);
+    }, 0);
   }
 
-  sumTotalDistance () {
-    return this.bikes.reduce((bike, totalDistance) => totalDistance + bike.totalDistance, 0);
-  }
-
-  sumComponents () {
-    const components = {};
-
-    for (const bike of this.bikes) {
-      for (const type of this.componentTypes) {
-        const component = bike.getComponent(type);
-        const dist = component ? component.totalDistance : 0;
-
-        components[type] = (components[type] || 0) + dist;
-      }
-    }
-
-    return Object.entries(components)
-      .map(([type, totalDistance]) => BikeComponent({
-        type,
-        totalDistance,
-
-        id: null,
-        href: 'todo?',
-        titleText: 'todo: sum sources'
-      }));
+  members () {
+    return this.bikes
+      .reduce((bike, bikeComponents) => {
+        const component = bike.getComponent(this.componentType);
+        if (component !== null) {
+          bikeComponents.push({bike, component});
+        }
+        return bikeComponents;
+      }, []);
   }
 }
 
@@ -90,10 +76,10 @@ export class GearCollection {
   constructor (bikes, bikeComponents, shoes) {
     this.bikes = bikes;
     this.shoes = shoes;
-    this.bikeLinks = [];
+    this.bikeComponents = [];
 
-    for (const c of bikeComponents) {
-      this.attachBikeComponent(c);
+    for (const component of bikeComponents) {
+      this.attachBikeComponent(component);
     }
   }
 
@@ -107,12 +93,11 @@ export class GearCollection {
     bike.attachComponent(component);
   }
 
-  createLink ({ displayName, bikeIds, componentTypes }) {
+  createdSharedBikeComponent ({ componentType, bikeIds }) {
     const bikes = this.bikes.filter(it => bikeIds.includes(it.id));
-    const link = new BikeLink({ displayName, bikes, componentTypes });
+    const component = new SharedBikeComponent({ bikes, componentType });
 
-    for (const bike of bikes) {
-      bike.addLink(link);
-    }
+    // TODO: attach to bike?
+    console.log('created shared:', component);
   }
 }

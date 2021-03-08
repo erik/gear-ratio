@@ -23,6 +23,39 @@ function queryAthleteId (document) {
     .pop();
 }
 
+const ListSharedGroupsModal = ({
+  gear,
+  componentGroups,
+  onClickCreate,
+}) => {
+  const onSubmit = (el) => {
+    el.stopPropagation();
+    el.preventDefault();
+    onClickCreate();
+  };
+
+  const groups = componentGroups.map(({componentTypes, bikeIds}) => {
+    const bikeNames = gear.bikes
+      .filter(({id}) => bikeIds.includes(id.toString()))
+      .map(bike => bike.display_name);
+
+    // TODO: add link to remove
+    return h('li', {}, [
+      h('b', {}, bikeNames.join(', ')),
+      ' share:',
+      h('ul', {}, componentTypes.map(it => h('li', {}, it)))
+    ]);
+  });
+
+  return h('div', {}, [
+    h('ul', {}, groups),
+
+    h('div', { onClick: onSubmit },
+      h('input', { type: 'submit', value: 'Create New Group' })
+    )
+  ]);
+};
+
 const CreateSharedGroupModal = ({ gear, onClickNext }) => {
   // Component-local state that DOES NOT trigger a re-render.
   //
@@ -40,11 +73,19 @@ const CreateSharedGroupModal = ({ gear, onClickNext }) => {
       return;
     }
 
-    // TODO: Go from selected -> component id, bike Id
+    const componentTypes = new Set(),
+      bikeIds = new Set();
+
+    for (const val of state.selected) {
+      const [a, b] = val.split('_');
+      bikeIds.add(a);
+      componentTypes.add(b);
+    }
 
     onClickNext({
-      components: ['todo'],
-      bikes: ['todo'],
+      groupId: 'TODO: some kind of id',
+      componentTypes: [...componentTypes],
+      bikeIds: [...bikeIds],
     });
   };
 
@@ -121,6 +162,7 @@ async function persistComponentGroup (group) {
   const state = await persistentState.restore();
 
   const groups = state.componentGroups || [];
+  console.log('groups was', groups, 'now adding', group);
   await persistentState.persist({ componentGroups: [...groups, group] });
 }
 
@@ -153,24 +195,37 @@ async function persistComponentGroup (group) {
 
         const onOpenModal = () => {
           this.setState({
-            modalStep: 'CREATE_GROUP',
+            modalStep: this.state.componentGroups !== [] ? 'LIST_GROUP' : 'CREATE_GROUP',
             isModalVisible: true
           });
         };
 
         let modalContents;
         switch (this.state.modalStep) {
+        case 'LIST_GROUP':
+          modalContents = h(ListSharedGroupsModal, {
+            gear: this.state.gear,
+            componentGroups: this.state.componentGroups,
+            onClickCreate: async () => {
+              this.setState({ modalStep: 'CREATE_GROUP' });
+            }
+          });
+          break;
+
         case 'CREATE_GROUP':
           modalContents = h(CreateSharedGroupModal, {
             gear: this.state.gear,
             onClickNext: async (group) => {
+              console.log('persisting...', group);
               await persistComponentGroup(group);
-              this.setState({isModalVisible: false});
+              this.setState({ isModalVisible: false });
             }
           });
           break;
 
         case null:
+          break;
+
         default:
           console.warn('Unknown modal step??', this.state.modalStep);
         }
@@ -198,13 +253,17 @@ async function persistComponentGroup (group) {
 
       onEvent: {
         async mounted () {
-          console.log('app mount');
           const athleteId = queryAthleteId(document);
           const locale = scrape.locale(document);
 
+          const appState = await persistentState.restore();
           const gear = await scrape.gear.refreshGear(athleteId, locale);
 
-          this.setState({ isLoadingGear: false, gear });
+          this.setState({
+            isLoadingGear: false,
+            componentGroups: appState.componentGroups || [],
+            gear,
+          });
         },
 
         error ({ error }) {
