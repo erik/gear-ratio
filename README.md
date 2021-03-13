@@ -5,6 +5,8 @@ on the homepage.
 
 Because I never remember to change my chain.
 
+![extension screenshot](./assets/gear_ratio.png)
+
 ## License
 
 Gear Ratio is available under GNU GPLv3. See `LICENSE` in the root of this
